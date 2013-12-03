@@ -2,9 +2,9 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Chiffrement 
+public abstract class Chiffrement 
 {
-	public String chiffrer(String message, String cle)
+	public static String chiffrer(String message, String cle)
 	{
 		String msgTransposee;
 		String msgCBC;
@@ -15,13 +15,13 @@ public class Chiffrement
 		return msgCBC;
 	}
 	
-	public String dechiffrer(String message, String cle)
+	public static String dechiffrer(String message, String cle)
 	{
 		return "";
 	}
 	
 	// Transforme la string dans un tableau 2 dimentions de char
-	private char[][] GenererTabChar(String _message, int _longCle) {
+	private static char[][] GenererTabChar(String _message, int _longCle) {
 		
 		int longMsgs, nbLnChar, posMsg;
 		longMsgs = _message.length();
@@ -43,7 +43,7 @@ public class Chiffrement
 	}
 	
 	// génère un mapping: clef => code de chiffrement; valeur => position dans la Matrice
-	private Map GenererTabAsso(String _cles, int _longCle) {
+	private static Map GenererTabAsso(String _cles, int _longCle) {
 		Map<Integer, Integer> posClefs = new HashMap<Integer,Integer>();
 		
 		for (int i = 0; i < _longCle; i++)
@@ -53,7 +53,7 @@ public class Chiffrement
 	}
 
 	// Chiffrement par transposition
-	private String ChiffrerClefTransposition(String _message, String _cle) {
+	private static String ChiffrerClefTransposition(String _message, String _cle) {
 		String sCles, msgCodee = "";
 		int longCles, colMatrice;
 		char[][] messOrigine;
@@ -77,7 +77,7 @@ public class Chiffrement
 	}
 
 	// Chiffrement par bloc CBC
-	private String ChiffrementCBC(String _msgTranspose) {
+	private static String ChiffrementCBC(String _msgTranspose) {
 		byte VI = 111;
 		
 		byte[] bMsgTrans = _msgTranspose.getBytes();
