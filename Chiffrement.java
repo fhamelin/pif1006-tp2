@@ -1,4 +1,3 @@
-import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,63 +28,34 @@ public abstract class Chiffrement
 	}
 	
 	// =======================================================================================
-	// M�thodes priv�s pour le chiffrement
+	// M�thodes priv�s pour le chiffrement
 	// =======================================================================================
 	
-	// Transforme la string dans un tableau 2 dimentions de char
-	private static char[][] GenererCrypteTabChar(String _message, int _longCle) {
-		
-		int longMsgs, nbLnChar, posMsg;
-		longMsgs = _message.length();
-		nbLnChar = (longMsgs / _longCle) + 1;
-		posMsg   = 0;
-		
-		char[][] cMsgs = new char[nbLnChar][_longCle];
-		
-		// On remplie le tableau de caractère par caractère
-		for (int ligne = 0; ligne < nbLnChar; ligne++)
-			for (int colonne = 0; colonne < _longCle; colonne++) 
-				if (posMsg < _message.length()) {
-					cMsgs[ligne][colonne] = _message.charAt(posMsg);
-					posMsg++;
-				}
-				else 
-					cMsgs[ligne][colonne] = '"'; // Caractère de msg vide
-		return cMsgs;
-	}
-	
-	// génère un mapping: clef => code de chiffrement; valeur => position dans la Matrice
-	private static Map GenererMapCrypte(String _cles, int _longCle) {
-		Map<Integer, Integer> posClefs = new HashMap<Integer,Integer>();
-		
-		for (int i = 0; i < _longCle; i++)
-			posClefs.put(Character.getNumericValue(_cles.charAt(i)), i);
-		
-		return posClefs;
-	}
-
 	// Chiffrement par transposition
 	private static String ChiffrerClefTransposition(String _message, String _cle) {
-		String sCles, msgCodee = "";
-		int longCles, colMatrice;
-		char[][] messOrigine;
+		String cle[] = _cle.split(" "); //Clé de chiffrement sous forme de tableau
+		char[][] messCode = new char[(int)Math.ceil((double)(_message.length()) / (double)(cle.length))][cle.length]; //Message codé sous forme de tableau compatible avec la clé
 		
-		sCles    = _cle.replaceAll("\\s","");
-		longCles = sCles.length();
-		
-		Map<Integer,Integer> posClefs = GenererMapCrypte(sCles, longCles);
-		messOrigine = GenererCrypteTabChar(_message, longCles);
-		
-		for (int colonne = 0; colonne < messOrigine[0].length; colonne++) {
-			// Se positionne sur la bonne colonne de la matrice 
-			colMatrice = posClefs.get(colonne+1);
-		
-			for (int ligne = 0; ligne < messOrigine.length; ligne++) 
-				if (messOrigine[ligne][colMatrice] != '"')
-					msgCodee += messOrigine[ligne][colMatrice];		
+		//Ajout des caractères du message dans le tableau du bon format
+		for (int ligne = 0;ligne < messCode.length;ligne++) {
+			for (int colonne = 0;colonne < messCode[ligne].length;colonne++) {
+				if (ligne * cle.length + colonne >= _message.length()) break;
+				messCode[ligne][Integer.parseInt(cle[colonne]) - 1] = _message.charAt(ligne * cle.length + colonne);
+			}
 		}
 		
-		return msgCodee;
+		String strMessCode = ""; // Message codé sous forme de string
+		
+		//On remet le message codé dans la string
+		for (int colonne = 0; colonne < cle.length; colonne++) {
+			for (int ligne = 0;ligne < messCode.length; ligne++) {
+				if (messCode[ligne][colonne] != '\u0000') {
+					strMessCode += messCode[ligne][colonne];
+				}
+			}
+		}
+		
+		return strMessCode;
 	}
 
 	// Chiffrement par bloc CBC
@@ -105,10 +75,10 @@ public abstract class Chiffrement
 	}
 	
 	// =======================================================================================
-	// M�thodes priv�s pour le d�criffrement
+	// M�thodes priv�s pour le d�criffrement
 	// =======================================================================================
 	
-	// D�chiffrement par CBC
+	// D�chiffrement par CBC
 	private static String DechiffrementCBC(String _message) {
 		
 		byte[] bMsgCBC   = _message.getBytes();
@@ -124,63 +94,41 @@ public abstract class Chiffrement
 		return new String(bMsgTrans);
 	}
 	
-	// D�chiffrement par transpos�e
-	private static String DechiffrementTranspose(String _msgTrans, String _cle) {
+	// D�chiffrement par transpos�e
+	private static String DechiffrementTranspose(String _message, String _cle) {
+		String cle[] = _cle.split(" "); //Clé de chiffrement sous forme de tableau
+		char[][] messOrigine = new char[(int)Math.ceil((double)(_message.length()) / (double)(cle.length))][cle.length]; //Message codé sous forme de tableau compatible avec la clé
 		
-		String sCles, msgDecodee = "";
-		int longCles, colMatrice;
-		char[][] msgTrans;
-		char[][] msgInitial;
+		int colNonNull = _message.length() % cle.length; //Nombre de colonne du tableau qui ne possèdent pas de caractère null
+		int colonneADechiffrer = 0; //Colonne à déchiffrer
+		int charAt = 0; //Position courante dans la chaîne de caractères encodée
 		
-		sCles    = _cle.replaceAll("\\s","");
-		longCles = sCles.length();
-		
-		Map<Integer,Integer> posClefs = GenererMapDecrypte(sCles, longCles);
-		msgTrans = GenererDecrypteTabChar(_msgTrans, longCles);
-		msgInitial = new char[msgTrans.length][msgTrans[0].length];
-
-		/*
-		for (int colonne = 0; colonne < msgTrans.length; colonne++) {
-			// Se positionne sur la bonne colonne de la matrice 
-			colMatrice = posClefs.get(colonne);
-		
-			for (int ligne = 0; ligne < msgTrans[0].length; ligne++) 
-				if (msgTrans[ligne][colMatrice] != '"')
-					msgInitial[ligne][colMatrice-1] += msgTrans[ligne][colMatrice];		
-		}
-		*/
-		return msgDecodee;
-	}
-	
-	private static char[][] GenererDecrypteTabChar(String _msgTrans, int _longCle) {
-		
-		int longMsgs, nbLnChar, posMsg;
-		longMsgs = _msgTrans.length();
-		nbLnChar = (longMsgs / _longCle) + 1;
-		posMsg   = 0;
-		
-		char[][] cMsgs = new char[nbLnChar][_longCle];
-		
-		// On remplie le tableau de caractère par caractère
-		for (int colonne = 0; colonne < _longCle; colonne++) 
-			for (int ligne = 0; ligne < nbLnChar; ligne++) 
-				if (posMsg < _msgTrans.length()) {
-					cMsgs[ligne][colonne] = _msgTrans.charAt(posMsg);
-					posMsg++;
+		//On répète l'opération jusqu'à ce que toutes les colonnes aient été déchiffrées
+		while (colonneADechiffrer < cle.length) {
+			for (int colonne = 0; colonne < cle.length; colonne++) {
+				if (Integer.parseInt(cle[colonne]) - 1 != colonneADechiffrer) {
+					continue;
 				}
-				else 
-					cMsgs[ligne][colonne] = '"'; // Caractère de msg vide
+				
+				int nbLignes = colonne < colNonNull ? messOrigine.length : messOrigine.length - 1; //Nombre de lignes pour la colonne en cours
+				
+				for (int ligne = 0;ligne < nbLignes; ligne++) {
+					messOrigine[ligne][colonne] = _message.charAt(charAt++);
+				}
+			}
+			colonneADechiffrer++;
+		}
 		
-		return cMsgs;
-	}
-	
-	// G�n�r� un mapping: clef => code de chiffrement; valeur => position dans la Matrice
-	private static Map GenererMapDecrypte(String _cles, int _longCle) {
-		Map<Integer, Integer> posClefs = new HashMap<Integer,Integer>();
+		String strMessOrigine = ""; //Message d'origine 
 		
-		for (int i = 0; i < _longCle; i++)
-			posClefs.put(i, Character.getNumericValue(_cles.charAt(i)));
+		//Ajout des caractères du tableau dans le string
+		for (int ligne = 0;ligne < messOrigine.length;ligne++) {
+			for (int colonne = 0;colonne < messOrigine[ligne].length;colonne++) {
+				if (ligne * cle.length + colonne >= _message.length()) break;
+				strMessOrigine += messOrigine[ligne][colonne];
+			}
+		}
 		
-		return posClefs;
+		return strMessOrigine;
 	}
 }
