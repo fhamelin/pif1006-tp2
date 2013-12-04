@@ -1,5 +1,6 @@
 import java.util.HashMap;
 import java.util.Map;
+import java.nio.charset.Charset;
 
 public abstract class Chiffrement 
 {
@@ -60,8 +61,7 @@ public abstract class Chiffrement
 
 	// Chiffrement par bloc CBC
 	private static String ChiffrementCBC(String _msgTranspose) {
-		
-		byte[] bMsgTrans = _msgTranspose.getBytes(); 
+		byte[] bMsgTrans = _msgTranspose.getBytes(Charset.forName("US-ASCII")); 
 		byte[] bMsgCBC   = new byte[bMsgTrans.length];
 		
 		for (int i = 0; i < bMsgTrans.length; i++){ // bMsgTrans.length
@@ -81,10 +81,10 @@ public abstract class Chiffrement
 	// D�chiffrement par CBC
 	private static String DechiffrementCBC(String _message) {
 		
-		byte[] bMsgCBC   = _message.getBytes();
+		byte[] bMsgCBC   = _message.getBytes(Charset.forName("US-ASCII"));
 		byte[] bMsgTrans = new byte[bMsgCBC.length];
 		
-		for (int i = 0; i < bMsgCBC.length; i++){
+		for (int i = bMsgCBC.length - 1; i >= 0 ; i--){
 			if (i == 0)
 				bMsgTrans[i] = (byte)(((int)bMsgCBC[i]) ^ ((int)VI));
 			else
