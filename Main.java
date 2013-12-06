@@ -2,7 +2,7 @@
 public class Main {
 
 	public static void main(String[] args) {
-		String message = "ce cours de math�matiques est tr�s int�ressant";
+		String message = "ce cours de mathematiques est tres interessant";
 		String cle = "7 1 4 5 2 3 8 6";
 		
 		// Chiffrement
